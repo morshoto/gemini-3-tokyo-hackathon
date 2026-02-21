@@ -1,0 +1,8 @@
+Graphics SRP Asset: Assets/StarterAssets/Settings/High_PipelineAsset.asset
+Quality Level: Ultra
+Quality SRP Asset: Assets/StarterAssets/Settings/High_PipelineAsset.asset
+Scene Loaded: Assets/Scenes/SampleScene.unity
+Verify: Plane
+  - Default-Material | Universal Render Pipeline/Lit
+Verify: MazeRoot/Wall_A
+  - GridWhite_01_Mat | Universal Render Pipeline/Lit
