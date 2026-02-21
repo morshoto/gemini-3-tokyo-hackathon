@@ -40,6 +40,11 @@ public class TreasureChest : MonoBehaviour
             return;
         }
 
+        MarkFound();
+    }
+
+    public void MarkFound()
+    {
         if (found)
         {
             return;
@@ -51,7 +56,7 @@ public class TreasureChest : MonoBehaviour
             manager.NotifyFound(this);
         }
 
-        Debug.Log($"Chest {chestId} found");
+        Debug.Log($"[PlayerE2E] Chest found at <{transform.position.x:F2},{transform.position.y:F2},{transform.position.z:F2}> id={chestId}");
 
         var renderer = GetComponentInChildren<Renderer>();
         if (renderer != null)

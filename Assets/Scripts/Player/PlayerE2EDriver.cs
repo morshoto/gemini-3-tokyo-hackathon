@@ -11,6 +11,8 @@ using UnityEngine;
 public class PlayerE2EDriver : MonoBehaviour
 {
     private const int ObsLogEveryNFrames = 60;
+    private const string ChestTag = "Chest";
+    private const float ChestDetectRadius = 6f;
 
     [Header("Bot")]
     public bool botEnabled = false;
@@ -49,7 +51,7 @@ public class PlayerE2EDriver : MonoBehaviour
         public float leftHit;
         public float rightHit;
         public int totalChests;
-        public int foundChests;
+        public int chestsFound;
         public float nearestChestDistance;
     }
 
@@ -250,24 +252,79 @@ public class PlayerE2EDriver : MonoBehaviour
         obs.leftHit    = CastRay(-transform.right);
         obs.rightHit   = CastRay(transform.right);
 
-        if (TreasureChestManager.TryGetInstance(out var manager))
-        {
-            obs.totalChests = manager.TotalChests;
-            obs.foundChests = manager.FoundChests;
-            obs.nearestChestDistance = manager.GetNearestUnfoundDistance(transform.position);
-        }
-        else
-        {
-            obs.totalChests = 0;
-            obs.foundChests = 0;
-            obs.nearestChestDistance = -1f;
-        }
+        UpdateChestCounts(out obs.totalChests, out obs.chestsFound, out obs.nearestChestDistance);
 
         lastObservationJson = JsonUtility.ToJson(obs);
 
         if (Time.frameCount % ObsLogEveryNFrames == 0)
         {
-            Debug.Log($"[PlayerE2E] obs position=<{obs.position.x:F2},{obs.position.z:F2}> chests={obs.foundChests}/{obs.totalChests}");
+            Debug.Log($"[PlayerE2E] obs position=<{obs.position.x:F2},{obs.position.z:F2}> chests={obs.chestsFound}/{obs.totalChests}");
+        }
+    }
+
+    private void UpdateChestCounts(out int total, out int found, out float nearestDistance)
+    {
+        total = 0;
+        found = 0;
+        nearestDistance = -1f;
+
+        var chests = GameObject.FindGameObjectsWithTag(ChestTag);
+        if (chests == null || chests.Length == 0)
+        {
+            return;
+        }
+
+        total = chests.Length;
+        float nearest = float.PositiveInfinity;
+
+        for (int i = 0; i < chests.Length; i++)
+        {
+            var chest = chests[i];
+            if (chest == null)
+            {
+                continue;
+            }
+
+            var chestComp = chest.GetComponent<TreasureChest>();
+            bool isFound = chestComp != null && chestComp.found;
+            if (isFound)
+            {
+                found++;
+                continue;
+            }
+
+            float dist = Vector3.Distance(transform.position, chest.transform.position);
+            if (dist < nearest)
+            {
+                nearest = dist;
+            }
+        }
+
+        nearestDistance = float.IsPositiveInfinity(nearest) ? -1f : nearest;
+
+        DetectNearbyChests();
+        if (TreasureChestManager.TryGetInstance(out var manager))
+        {
+            found = manager.FoundChests;
+        }
+    }
+
+    private void DetectNearbyChests()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, ChestDetectRadius);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            var col = hits[i];
+            if (col == null || !col.CompareTag(ChestTag))
+            {
+                continue;
+            }
+
+            var chest = col.GetComponent<TreasureChest>();
+            if (chest != null)
+            {
+                chest.MarkFound();
+            }
         }
     }
 

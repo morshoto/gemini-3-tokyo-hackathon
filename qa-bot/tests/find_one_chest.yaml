@@ -1,14 +1,15 @@
+# Test: verify bot can find at least one chest in a small maze run.
 name: find_one_chest
 description: >
   You are a QA bot exploring a small maze level.
-  Your main goal is to find at least one treasure chest as efficiently as possible.
+  Your main goal is to find all treasure chests as efficiently as possible.
 
 maxSteps: 80
 
 objectives:
-  - id: chest1
+  - id: chest_all
     type: chest_count_at_least
-    minimum: 1
+    minimum: 4
 
 constraints:
   maxIdleSteps: 10   # if position & rotation don't change for too long, it's a failure
@@ -21,7 +22,7 @@ prompt:
       - time
       - position (x, y, z)
       - rotation and yaw
-      - chest counts (e.g., totalChests, foundChests)
+      - chest counts (e.g., totalChests, chestsFound)
     Your job is to efficiently reach treasure chests while avoiding getting stuck.
 
     You must always return one discrete command in this JSON shape:
