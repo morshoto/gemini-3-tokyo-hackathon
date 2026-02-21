@@ -10,11 +10,15 @@ public class GeminiE2EClient : MonoBehaviour
     public PlayerE2EDriver driver;
 
     [Header("Server Endpoints")]
+    public string startUrl = "http://localhost:3000/start";
     public string stepUrl = "http://localhost:3000/step";
     public string reportUrl = "http://localhost:3000/report";
 
+    [Header("Scenario")]
+    public string testName = "find_one_chest";
+
     [Header("Loop Settings")]
-    public float stepInterval = 1.0f;
+    public float stepInterval = 0.5f;
     public int maxSteps = 200;
 
     private bool _running;
@@ -37,6 +41,12 @@ public class GeminiE2EClient : MonoBehaviour
     private class ReportRequest
     {
         public string dummy = "ok";
+    }
+
+    [System.Serializable]
+    private class StartRequest
+    {
+        public string testName;
     }
 
     [System.Serializable]
@@ -104,6 +114,26 @@ public class GeminiE2EClient : MonoBehaviour
     private IEnumerator E2ELoop()
     {
         int steps = 0;
+
+        Debug.Log($"[GeminiE2E] START request, testName={testName}");
+        var startBody = new StartRequest { testName = testName };
+        string startJson = JsonUtility.ToJson(startBody);
+
+        using (UnityWebRequest req = BuildJsonPost(startUrl, startJson))
+        {
+#if UNITY_2020_2_OR_NEWER
+            yield return req.SendWebRequest();
+            bool hasError = req.result == UnityWebRequest.Result.ConnectionError
+                            || req.result == UnityWebRequest.Result.ProtocolError;
+#else
+            yield return req.SendWebRequest();
+            bool hasError = req.isNetworkError || req.isHttpError;
+#endif
+            if (hasError)
+            {
+                Debug.LogError("[GeminiE2E] START error: " + req.error);
+            }
+        }
 
         while (driver != null && driver.botEnabled && steps < maxSteps)
         {

@@ -20,6 +20,9 @@ importers:
       express:
         specifier: ^4.19.2
         version: 4.22.1
+      yaml:
+        specifier: ^2.5.1
+        version: 2.8.2
 
 packages:
 
@@ -401,6 +404,11 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  yaml@2.8.2:
+    resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
 
 snapshots:
 
@@ -821,3 +829,5 @@ snapshots:
       webidl-conversions: 3.0.1
 
   ws@8.19.0: {}
+
+  yaml@2.8.2: {}
